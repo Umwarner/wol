@@ -18,15 +18,19 @@ fn main() -> Result<(), ParseIntError> {
     // mac_address: [u8; 6] Stores mac address in hex/base-16
     // magic_packet - Creates WOL magic packet for the specified mac_address
     // local_ip = Doesn't appear to be neccessary??? using 0.0.0.0
-    // remote_ip = IP of remote gateway, can be IP or DNS hostname
+    // remote_ip = IP of remote gateway, can be IPv4, IPV6 or DNS hostname
     let mac_address = get_mac_address(&args[1])?;
     let magic_packet = wake_on_lan::MagicPacket::new(&mac_address);
     let local_ip = IpAddr::V4(Ipv4Addr::from([0, 0, 0, 0]));
     let remote_ip = get_remote_ip(&args[2]);
+    let remote_port = 9;
+    // TODO: Allow user to specify port
 
     //Send magic packet to specified host on port 9
-    // TODO: Allow user to specify port
-    match magic_packet.send_to(get_socket(remote_ip, 9), get_socket(local_ip, 9)) {
+    match magic_packet.send_to(
+        get_socket(remote_ip, remote_port),
+        get_socket(local_ip, remote_port),
+    ) {
         Ok(_) => (),
         Err(e) => panic!("Magic Packet Failed to Send: {}", e),
     }
@@ -62,4 +66,3 @@ fn get_remote_ip(address: &str) -> IpAddr {
         },
     }
 }
-
